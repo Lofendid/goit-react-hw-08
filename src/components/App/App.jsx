@@ -1,25 +1,64 @@
-import css from './App.module.css';
+import { useEffect, lazy } from 'react';
 
-import ContactForm from '../ContactForm/ContactForm';
-import SearchBox from '../SearchBox/SearchBox';
-import ContactList from '../ContactList/ContactList';
-import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from 'react';
-import { fetchContacts } from '../../redux/contactsOps';
+import { useDispatch } from 'react-redux';
+import { Route, Routes } from 'react-router-dom';
+
 import { Toaster } from 'react-hot-toast';
+
+import { Layout } from '../Layout/Layout';
+import { PrivateRoute } from '../PrivateRoute/PrivateRoute';
+import { RestrictedRoute } from '../RestrictedRoute/RestrictedRoute';
+
+import { useAuth } from '../../hooks';
+
+import { refreshUser } from '../../redux/auth/operations';
+
+const HomePage = lazy(() => import('../../pages/Home/HomePage'));
+const RegisterPage = lazy(() => import('../../pages/Register/RegisterPage'));
+const LoginPage = lazy(() => import('../../pages/Login/LoginPage'));
+const ContactsPage = lazy(() => import('../../pages/Contacts/ContactsPage'));
 
 function App() {
   const dispatch = useDispatch();
+  const { isRefreshing } = useAuth();
 
   useEffect(() => {
-    dispatch(fetchContacts());
+    dispatch(refreshUser());
   }, [dispatch]);
 
-  const error = useSelector(state => state.contacts.error);
-  const loading = useSelector(state => state.contacts.loading);
-
-  return (
+  return isRefreshing ? (
+    <b>Refreshing user...</b>
+  ) : (
     <>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<HomePage />} />
+          <Route
+            path="/register"
+            element={
+              <RestrictedRoute
+                redirectTo="/contacts"
+                component={<RegisterPage />}
+              />
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <RestrictedRoute
+                redirectTo="/contacts"
+                component={<LoginPage />}
+              />
+            }
+          />
+          <Route
+            path="/contacts"
+            element={
+              <PrivateRoute redirectTo="/login" component={<ContactsPage />} />
+            }
+          />
+        </Route>
+      </Routes>
       <Toaster
         position="bottom-center"
         toastOptions={{
@@ -30,30 +69,6 @@ function App() {
           },
         }}
       />
-      <div className={css.container}>
-        <h1 className={css.containerItem}>Phonebook</h1>
-
-        <div className={css.containerItem}>
-          <ContactForm />
-        </div>
-
-        <div className={css.containerItem}>
-          <SearchBox />
-        </div>
-
-        {loading && <p>Loading...</p>}
-
-        <div className={css.containerItem}>
-          <ContactList />
-        </div>
-
-        {error && (
-          <p className={css.error}>
-            Unfortunately, the following error occurred: &quot;{error.message}
-            &quot; . Try reloading the page!
-          </p>
-        )}
-      </div>
     </>
   );
 }

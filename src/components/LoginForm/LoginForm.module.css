@@ -1,0 +1,28 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 20rem;
+  margin-top: 5rem;
+  margin-right: auto;
+  margin-left: auto;
+  padding: 1rem;
+  border: 0.01rem solid black;
+  border-radius: 0.5rem;
+}
+
+.formInput {
+  min-height: 2rem;
+  border-radius: 0.4rem;
+}
+
+.errMsg {
+  color: rgb(255, 0, 0);
+  opacity: 0.9;
+  text-align: start;
+}
+
+.label {
+  text-transform: capitalize;
+  font-weight: 600;
+}
